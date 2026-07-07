@@ -1,22 +1,38 @@
 # mcumgr_dart
 
+[![pub package](https://img.shields.io/pub/v/mcumgr_dart.svg)](https://pub.dev/packages/mcumgr_dart)
+[![pub points](https://img.shields.io/pub/points/mcumgr_dart)](https://pub.dev/packages/mcumgr_dart/score)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A pure-Dart client for the **Simple Management Protocol (SMP)** and the
 **MCUmgr** management groups used by [Zephyr](https://www.zephyrproject.org/) /
 [MCUboot](https://www.mcuboot.com/) devices.
+
+## Features
 
 - **Transport-agnostic.** Bring your own byte transport — BLE, serial, or TCP —
   by implementing a small interface. Everything above it is plain Dart.
 - **No Flutter dependency.** Runs anywhere Dart runs (Flutter apps, CLI tools,
   servers). Depends only on `cbor` and `crypto`.
+- **All platforms:** iOS · Android · macOS · Windows · Linux · Web — no native
+  code, no platform channels.
 - **Batteries included** for the common groups: **OS** (echo, datetime, reset),
   **Image** (the DFU upload/test/confirm flow), and **Filesystem** (file
-  download/upload/stat).
+  download/upload/stat). Vendor groups are easy to add.
+- **Testable without hardware** — `SmpClient` runs over any transport, including
+  an in-process loopback (see the example).
 
 Extracted from the [ProtoCentral](https://protocentral.com) OpenView 3 and
 HealthyPi Move apps, where it drives BLE firmware updates and health-data file
 transfer over MCUmgr.
 
 ## Install
+
+```bash
+dart pub add mcumgr_dart
+```
+
+or add it to `pubspec.yaml`:
 
 ```yaml
 dependencies:
@@ -123,6 +139,16 @@ final bytes = await fs.download('/lfs/log/1',
 await fs.upload('/lfs/config.bin', configBytes);
 ```
 
+## Examples
+
+- [`example/mcumgr_dart_example.dart`](example/mcumgr_dart_example.dart) — a
+  runnable, pure-Dart **loopback** demo (no hardware): a fake device that answers
+  OS-group echo. Run it with `dart run example/mcumgr_dart_example.dart`.
+- [`example/ble_universal_ble/`](example/ble_universal_ble) — a complete **Flutter
+  + BLE** example: scan → connect → echo + image list, using a real
+  `SmpBleTransport` on [`universal_ble`](https://pub.dev/packages/universal_ble).
+  (`universal_ble` is a dependency of that example only, never of this package.)
+
 ## Error handling
 
 Non-zero MCUmgr result codes surface as `SmpException` (both SMP v1 top-level
@@ -136,6 +162,22 @@ Stock Zephyr `fs_mgmt` exposes only per-file transfer + status — there is **no
 directory listing or delete** in the base group, so `FsMgmt` is a transfer-by-
 path facade, not a browser. Vendor groups can extend this.
 
+Implemented groups: **OS** (0), **Image** (1), **Filesystem** (8). The Stats,
+Settings, Shell and Enum groups are not yet implemented — contributions welcome.
+
+## Additional information
+
+- **Source & issues:** <https://github.com/Protocentral/mcumgr_dart>
+- **Why another MCUmgr package?** The existing Dart option wraps native
+  Android/iOS/macOS libraries (mobile-only, BLE-only). `mcumgr_dart` is pure
+  Dart, so it also runs on **Windows, Linux, web, CLI and servers**, and lets SMP
+  ride an **existing** transport instead of opening a second native BLE link.
+- **Contributing:** issues and PRs are welcome — new management groups, transport
+  adapters, and test coverage especially.
+- **Protocol reference:** the SMP header and CBOR payload layout follow the
+  [MCUmgr / SMP](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_protocol.html)
+  specification.
+
 ## License
 
-MIT © ProtoCentral
+[MIT](LICENSE) © ProtoCentral

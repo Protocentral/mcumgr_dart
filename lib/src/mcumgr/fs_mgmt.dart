@@ -1,3 +1,6 @@
+// Copyright (c) 2024 ProtoCentral
+// SPDX-License-Identifier: MIT
+
 import 'dart:typed_data';
 
 import '../smp/smp_client.dart';
@@ -34,8 +37,8 @@ class FsMgmt {
   SmpMessage _check(SmpMessage rsp) {
     final code = rsp.rc;
     if (code != null) {
-      throw SmpException(rsp.errorLabel ?? 'rc=$code', rsp.group, rsp.id,
-          rsp.seq,
+      throw SmpException(
+          rsp.errorLabel ?? 'rc=$code', rsp.group, rsp.id, rsp.seq,
           rc: code);
     }
     return rsp;
@@ -73,7 +76,8 @@ class FsMgmt {
         total = len is int ? len : 0;
       }
       final data = rsp.payload['data'];
-      final bytes = (data is List) ? Uint8List.fromList(data.cast<int>()) : Uint8List(0);
+      final bytes =
+          (data is List) ? Uint8List.fromList(data.cast<int>()) : Uint8List(0);
       out.add(bytes);
       off += bytes.length;
       onProgress?.call(off, total);

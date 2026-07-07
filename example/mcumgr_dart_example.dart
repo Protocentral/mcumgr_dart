@@ -1,3 +1,6 @@
+// Copyright (c) 2024 ProtoCentral
+// SPDX-License-Identifier: MIT
+
 // A runnable, self-contained example: a loopback [SmpTransport] that plays the
 // role of a device answering the OS-group **echo** command, driven through the
 // real [SmpClient] + [OsMgmt] facade.

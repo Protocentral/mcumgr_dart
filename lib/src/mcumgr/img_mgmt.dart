@@ -1,3 +1,6 @@
+// Copyright (c) 2024 ProtoCentral
+// SPDX-License-Identifier: MIT
+
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
@@ -95,8 +98,8 @@ class ImgMgmt {
   SmpMessage _check(SmpMessage rsp) {
     final code = rsp.rc;
     if (code != null) {
-      throw SmpException(rsp.errorLabel ?? 'rc=$code', rsp.group, rsp.id,
-          rsp.seq,
+      throw SmpException(
+          rsp.errorLabel ?? 'rc=$code', rsp.group, rsp.id, rsp.seq,
           rc: code);
     }
     return rsp;

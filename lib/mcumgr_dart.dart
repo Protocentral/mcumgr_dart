@@ -1,3 +1,6 @@
+// Copyright (c) 2024 ProtoCentral
+// SPDX-License-Identifier: MIT
+
 /// A pure-Dart client for the **Simple Management Protocol (SMP)** and the
 /// **MCUmgr** management groups used by Zephyr / MCUboot devices.
 ///

@@ -1,8 +1,7 @@
 name: mcumgr_dart
 description: >-
-  Pure-Dart client for the SMP (Simple Management Protocol) and MCUmgr
-  management groups used by Zephyr / MCUboot devices — OS, Image (DFU) and
-  Filesystem. Bring your own transport (BLE, serial, TCP). No Flutter dependency.
+  Pure-Dart client for the SMP / MCUmgr protocol (OS, Image/DFU and Filesystem
+  groups) on Zephyr and MCUboot devices. Bring your own transport; no Flutter.
 version: 0.1.0
 repository: https://github.com/Protocentral/mcumgr_dart
 issue_tracker: https://github.com/Protocentral/mcumgr_dart/issues

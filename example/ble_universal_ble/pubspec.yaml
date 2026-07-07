@@ -1,0 +1,26 @@
+name: mcumgr_dart_ble_example
+description: >-
+  Example: driving mcumgr_dart over BLE with a universal_ble transport
+  (SMP echo + image list). universal_ble is a dependency of THIS example only,
+  never of the mcumgr_dart package.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  universal_ble: ^2.0.1
+  # The package under demonstration. In a real app you'd use a hosted or
+  # in-tree (submodule) path dependency; here it points at the parent package.
+  mcumgr_dart:
+    path: ../..
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

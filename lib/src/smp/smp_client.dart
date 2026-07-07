@@ -1,3 +1,6 @@
+// Copyright (c) 2024 ProtoCentral
+// SPDX-License-Identifier: MIT
+
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -5,7 +8,8 @@ import 'smp_message.dart';
 import 'smp_transport.dart';
 
 /// Callback used to mirror traffic to the Console screen (raw log).
-typedef SmpLogSink = void Function(SmpMessage message, {required bool outbound});
+typedef SmpLogSink = void Function(SmpMessage message,
+    {required bool outbound});
 
 /// Request/response SMP client over any [SmpTransport].
 ///

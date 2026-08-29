@@ -20,6 +20,12 @@
 ///
 /// final fs = FsMgmt(client, maxWriteLength: () => myTransport.maxWriteLength);
 /// final bytes = await fs.download('/lfs/log/1');  // FS group
+///
+/// final stats = StatMgmt(client);
+/// print(await stats.list());                 // Statistics group
+///
+/// final settings = SettingsMgmt(client);
+/// print((await settings.read('app/led')).asInt());   // Settings group
 /// ```
 library mcumgr_dart;
 
@@ -32,3 +38,5 @@ export 'src/smp/smp_client.dart';
 export 'src/mcumgr/os_mgmt.dart';
 export 'src/mcumgr/img_mgmt.dart';
 export 'src/mcumgr/fs_mgmt.dart';
+export 'src/mcumgr/stat_mgmt.dart';
+export 'src/mcumgr/settings_mgmt.dart';

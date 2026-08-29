@@ -17,8 +17,9 @@ A pure-Dart client for the **Simple Management Protocol (SMP)** and the
 - **All platforms:** iOS · Android · macOS · Windows · Linux · Web — no native
   code, no platform channels.
 - **Batteries included** for the common groups: **OS** (echo, datetime, reset),
-  **Image** (the DFU upload/test/confirm flow), and **Filesystem** (file
-  download/upload/stat). Vendor groups are easy to add.
+  **Image** (the DFU upload/test/confirm flow), **Filesystem** (file
+  download/upload/stat), **Statistics** (list/show counters) and **Settings**
+  (read/write/delete/commit/save). Vendor groups are easy to add.
 - **Testable without hardware** — `SmpClient` runs over any transport, including
   an in-process loopback (see the example).
 
@@ -139,6 +140,34 @@ final bytes = await fs.download('/lfs/log/1',
 await fs.upload('/lfs/config.bin', configBytes);
 ```
 
+### Statistics (group 2)
+
+```dart
+final stats = StatMgmt(client);
+
+for (final name in await stats.list()) {
+  final group = await stats.show(name);
+  print('$name -> ${group.fields}');       // { 'frame_rx': 12, ... }
+}
+```
+
+### Settings (group 3)
+
+```dart
+final settings = SettingsMgmt(client);
+
+final value = await settings.read('app/brightness');
+if (value.truncated) print('device returned only ${value.length} bytes');
+print(value.asInt());                       // little-endian, width from the value
+
+await settings.writeInt('app/brightness', 80, width: 1);
+await settings.commit();                    // apply at runtime
+await settings.save();                      // persist across reboot
+```
+
+A write alone does neither of the last two — that is the most common surprise
+with this group.
+
 ## Examples
 
 - [`example/mcumgr_dart_example.dart`](example/mcumgr_dart_example.dart) — a
@@ -162,8 +191,25 @@ Stock Zephyr `fs_mgmt` exposes only per-file transfer + status — there is **no
 directory listing or delete** in the base group, so `FsMgmt` is a transfer-by-
 path facade, not a browser. Vendor groups can extend this.
 
-Implemented groups: **OS** (0), **Image** (1), **Filesystem** (8). The Stats,
-Settings, Shell and Enum groups are not yet implemented — contributions welcome.
+`StatMgmt` is read-only because MCUmgr is: there is no command to reset a
+counter, so rates must be derived by sampling `show` twice and differencing.
+
+`SettingsMgmt` returns **opaque bytes**, because Zephyr's settings subsystem
+carries no type information to report. `SettingValue` provides `asInt`,
+`asBool` and `asString` for the usual cases and documents their assumptions
+(little-endian, caller-known width); anything else, decode the bytes yourself.
+Note that a device signals a **truncated** read by adding `max_size` to an
+otherwise ordinary success response — `SettingValue.truncated` surfaces that, so
+a short value is never mistaken for a whole one.
+
+Implemented groups: **OS** (0), **Statistics** (2), **Settings** (3),
+**Image** (1), **Filesystem** (8). The Shell and Enum groups are not yet
+implemented — contributions welcome.
+
+Device-side Kconfig for the newer groups: statistics needs
+`CONFIG_MCUMGR_GRP_STAT` (which depends on `CONFIG_STATS`); settings needs
+`CONFIG_MCUMGR_GRP_SETTINGS`, which requires **both** `CONFIG_SETTINGS` and
+`CONFIG_SETTINGS_RUNTIME` — the second is easy to miss.
 
 ## Additional information
 

@@ -207,5 +207,33 @@ String smpGroupErrorName(int group, int rc) {
     };
     return img[rc] != null ? 'image: ${img[rc]} (rc=$rc)' : 'image rc=$rc';
   }
+  if (group == 2) {
+    const stat = <int, String>{
+      0: 'ok',
+      1: 'unknown',
+      2: 'unknown group name',
+      3: 'unknown statistic name',
+      4: 'statistic size cannot be handled',
+      5: 'walk aborted',
+    };
+    return stat[rc] != null ? 'stats: ${stat[rc]} (rc=$rc)' : 'stats rc=$rc';
+  }
+  if (group == 3) {
+    const settings = <int, String>{
+      0: 'ok',
+      1: 'unknown',
+      2: 'key name too long',
+      3: 'key not found',
+      4: 'key does not support being read',
+      5: 'root key not found',
+      6: 'key does not support being written',
+      7: 'key does not support being deleted',
+      8: 'key does not support being saved',
+      9: 'value too long to read back before saving',
+    };
+    return settings[rc] != null
+        ? 'settings: ${settings[rc]} (rc=$rc)'
+        : 'settings rc=$rc';
+  }
   return 'group $group rc=$rc';
 }

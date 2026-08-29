@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.0
+
+Serial and other byte-stream transports no longer have to reimplement Zephyr's
+framing. Purely additive — no breaking changes, no new dependencies, and the
+package stays platform-agnostic (the codec is `dart:convert` + `dart:typed_data`
+only, so Web support is unaffected).
+
+- **`uart_mcumgr` encapsulation (`UartMcumgrCodec` / `UartMcumgrDecoder`).** On
+  BLE the bytes on the characteristic *are* the SMP frame, so `SmpTransport`
+  needs nothing else. A byte stream has no packet boundaries, and Zephyr's
+  `uart_mcumgr` wraps each frame in a length prefix, a CRC-16/XMODEM and
+  base64 lines marked `0x06 0x09` / `0x04 0x14`. `UartMcumgrCodec.encode()`
+  produces those lines and `UartMcumgrDecoder.add()` recovers whole SMP frames
+  from arbitrary chunk boundaries, leaving a serial or TCP transport with
+  nothing to do but move bytes.
+
+  The decoder is deliberately forgiving, because a device's console log usually
+  shares the pipe: unmarked lines are skipped, and a packet failing its length
+  or CRC check is dropped rather than thrown, so one bad packet cannot wedge the
+  stream. Both are counted in `badFrames`. `encode()` emits a single line by
+  default and splits across continuation lines when given a `maxLineLength`.
+
 ## 0.2.0
 
 Adds the two remaining read/write management groups from stock Zephyr, both

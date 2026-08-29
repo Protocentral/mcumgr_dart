@@ -2,7 +2,7 @@ name: mcumgr_dart
 description: >-
   Pure-Dart client for the SMP / MCUmgr protocol (OS, Image/DFU and Filesystem
   groups) on Zephyr and MCUboot devices. Bring your own transport; no Flutter.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/Protocentral/mcumgr_dart
 issue_tracker: https://github.com/Protocentral/mcumgr_dart/issues
 

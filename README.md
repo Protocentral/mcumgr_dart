@@ -12,6 +12,8 @@ A pure-Dart client for the **Simple Management Protocol (SMP)** and the
 
 - **Transport-agnostic.** Bring your own byte transport — BLE, serial, or TCP —
   by implementing a small interface. Everything above it is plain Dart.
+- **Byte streams included.** For serial or TCP, `UartMcumgrCodec` implements
+  Zephyr's `uart_mcumgr` framing, so the transport only has to move bytes.
 - **No Flutter dependency.** Runs anywhere Dart runs (Flutter apps, CLI tools,
   servers). Depends only on `cbor` and `crypto`.
 - **All platforms:** iOS · Android · macOS · Windows · Linux · Web — no native
@@ -107,6 +109,43 @@ class MyTransport implements SmpTransport {
 For BLE, a good pattern is [`universal_ble`](https://pub.dev/packages/universal_ble):
 gate on the SMP service `8d53dc1d-1db7-4cd3-868b-8a527460aa84`, subscribe to its
 characteristic, and forward notifications to the `notifications` stream.
+
+### Byte-stream transports (serial, TCP)
+
+On BLE the bytes on the characteristic *are* the SMP frame. A byte stream has no
+packet boundaries, so Zephyr's `uart_mcumgr` transport wraps each frame in a
+length prefix, a CRC-16/XMODEM and base64 lines marked `0x06 0x09` (start) or
+`0x04 0x14` (continuation). `UartMcumgrCodec` implements exactly that, leaving
+the transport with nothing to do but move bytes:
+
+```dart
+final _decoder = UartMcumgrDecoder();
+
+@override
+Future<void> write(Uint8List frame) async {
+  for (final line in UartMcumgrCodec.encode(frame)) {
+    port.write(line);           // SerialPort, Socket, anything byte-oriented
+  }
+}
+
+// Feed whatever the stream hands you — partial lines, several at once,
+// interleaved console text — and forward whole frames to `notifications`.
+void _onBytes(Uint8List chunk) {
+  for (final frame in _decoder.add(chunk)) {
+    _rx.add(frame);
+  }
+}
+```
+
+The decoder is forgiving by design, because a device's console log usually
+shares the pipe: an unmarked line is skipped, and a packet that fails its length
+or CRC check is dropped rather than thrown — so one bad packet cannot wedge the
+stream. Both are counted in `badFrames`. Call `reset()` on reconnect so a
+truncated packet cannot merge into the next session. `encode()` emits one line
+per frame by default; pass `maxLineLength` to split across continuation lines.
+
+`maxWriteLength` still matters: it bounds `ImgMgmt`'s upload chunks, so set it so
+one framed line fits the device's receive buffer.
 
 ## Usage
 

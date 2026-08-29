@@ -9,6 +9,10 @@
 /// fragment reassembly, and the OS / Image / FS management facades — is plain
 /// Dart with no Flutter dependency.
 ///
+/// For a byte stream rather than a GATT characteristic, [UartMcumgrCodec] and
+/// [UartMcumgrDecoder] provide Zephyr's `uart_mcumgr` encapsulation, so a
+/// serial or TCP transport only has to move bytes.
+///
 /// ```dart
 /// final client = SmpClient(myTransport);
 /// final os = OsMgmt(client);
@@ -32,6 +36,7 @@ library mcumgr_dart;
 // SMP core
 export 'src/smp/smp_message.dart';
 export 'src/smp/smp_transport.dart';
+export 'src/smp/uart_mcumgr_codec.dart';
 export 'src/smp/smp_client.dart';
 
 // MCUmgr management groups

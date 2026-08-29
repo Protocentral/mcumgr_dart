@@ -140,8 +140,10 @@ void _onBytes(Uint8List chunk) {
 The decoder is forgiving by design, because a device's console log usually
 shares the pipe: an unmarked line is skipped, and a packet that fails its length
 or CRC check is dropped rather than thrown — so one bad packet cannot wedge the
-stream. Both are counted in `badFrames`. Call `reset()` on reconnect so a
-truncated packet cannot merge into the next session. `encode()` emits one line
+stream. Both are counted in `badFrames`. Accumulation is bounded by
+`maxPacketBytes` (default 4096), so a device that opens a packet and never
+finishes it cannot grow the buffer without limit. Call `reset()` on reconnect so
+a truncated packet cannot merge into the next session. `encode()` emits one line
 per frame by default; pass `maxLineLength` to split across continuation lines.
 
 `maxWriteLength` still matters: it bounds `ImgMgmt`'s upload chunks, so set it so

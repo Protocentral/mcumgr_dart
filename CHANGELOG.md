@@ -22,6 +22,12 @@ only, so Web support is unaffected).
   stream. Both are counted in `badFrames`. `encode()` emits a single line by
   default and splits across continuation lines when given a `maxLineLength`.
 
+  Accumulation is bounded by `maxPacketBytes` (default 4096). A device that
+  emits a start marker and then never completes the packet — wedged
+  mid-transmission, or a console line that happens to open with the marker
+  bytes — would otherwise grow the buffer without limit. An oversized packet is
+  discarded, counted, and the decoder resumes at the next start marker.
+
 ## 0.2.0
 
 Adds the two remaining read/write management groups from stock Zephyr, both

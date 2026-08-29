@@ -168,6 +168,45 @@ void main() {
       expect(decoder.badFrames, 0);
     });
 
+    test('discards a packet that grows past maxPacketBytes', () {
+      final decoder = UartMcumgrDecoder(maxPacketBytes: 64);
+      final lines = UartMcumgrCodec.encode(
+        _frame(payload: {'d': 'w' * 600}),
+        maxLineLength: 48,
+      );
+
+      final out = <Uint8List>[];
+      for (final line in lines) {
+        out.addAll(decoder.add(line));
+      }
+
+      expect(out, isEmpty);
+      expect(decoder.badFrames, greaterThanOrEqualTo(1));
+    });
+
+    test('recovers on the next start marker after an oversized packet', () {
+      final decoder = UartMcumgrDecoder(maxPacketBytes: 64);
+      for (final line in UartMcumgrCodec.encode(
+        _frame(payload: {'d': 'w' * 600}),
+        maxLineLength: 48,
+      )) {
+        decoder.add(line);
+      }
+
+      final good = _frame(seq: 9);
+      final out = decoder.add(UartMcumgrCodec.encode(good).single);
+      expect(out, hasLength(1));
+      expect(SmpMessage.fromBytes(out.single).seq, 9);
+    });
+
+    test('a packet within the cap is unaffected', () {
+      final frame = _frame(payload: {'d': 'v' * 100});
+      final decoder = UartMcumgrDecoder(maxPacketBytes: 4096);
+      final out = decoder.add(UartMcumgrCodec.encode(frame).single);
+      expect(out.single, frame);
+      expect(decoder.badFrames, 0);
+    });
+
     test('reset discards a half-received packet', () {
       final decoder = UartMcumgrDecoder();
       final lines = UartMcumgrCodec.encode(

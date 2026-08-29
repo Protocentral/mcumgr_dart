@@ -115,7 +115,21 @@ abstract final class UartMcumgrCodec {
 /// declared length does not check out is dropped rather than thrown, so one bad
 /// packet cannot wedge the stream. Both cases bump a counter ([badFrames]) so a
 /// caller that cares can surface it.
+///
+/// Accumulation is bounded by [maxPacketBytes]. A device that emits a start
+/// marker and then never completes the packet — wedged mid-transmission, or a
+/// console line that happens to open with the marker bytes — would otherwise
+/// grow the buffer without limit.
 class UartMcumgrDecoder {
+  UartMcumgrDecoder({this.maxPacketBytes = 4096})
+      : assert(maxPacketBytes > 0, 'maxPacketBytes must be positive');
+
+  /// Largest packet to accumulate, in decoded bytes. Once a partial packet
+  /// would exceed this it is discarded and counted in [badFrames], and the
+  /// decoder waits for the next start marker. The default is comfortably above
+  /// any Zephyr `CONFIG_MCUMGR_TRANSPORT_UART_MTU` in practical use.
+  final int maxPacketBytes;
+
   final List<int> _line = <int>[];
   final StringBuffer _b64 = StringBuffer();
   bool _inPacket = false;
@@ -164,6 +178,14 @@ class UartMcumgrDecoder {
     }
 
     _b64.write(String.fromCharCodes(_line.sublist(2)));
+
+    // 4 base64 characters carry 3 bytes.
+    if ((_b64.length ~/ 4) * 3 > maxPacketBytes) {
+      _badFrames++;
+      _b64.clear();
+      _inPacket = false;
+      return null;
+    }
 
     final Uint8List decoded;
     try {
